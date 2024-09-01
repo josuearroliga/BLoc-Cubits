@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:formsapp/presentation/barrel.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:formsapp/infrastructure/inputs/username.dart';
+
+import 'package:formsapp/presentation/widgets/input/custom_text_form_field.dart';
+
+import '../blocs/register/register_cubit.dart' as cubit;
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -10,24 +15,27 @@ class RegisterScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Nuevo Usuario'),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                const FlutterLogo(
-                  size: 100,
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                _CustomTextField(),
-                const SizedBox(
-                  height: 10,
-                ),
-              ],
+      body: BlocProvider(
+        create: (context) => cubit.RegisterCubit(),
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const FlutterLogo(
+                    size: 100,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  _CustomTextFormField(),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -36,20 +44,28 @@ class RegisterScreen extends StatelessWidget {
   }
 }
 
-class _CustomTextField extends StatelessWidget {
+class _CustomTextFormField extends StatefulWidget {
+  @override
+  State<_CustomTextFormField> createState() => _CustomTextFormFieldState();
+}
+
+class _CustomTextFormFieldState extends State<_CustomTextFormField> {
   final _formKey = GlobalKey<FormState>();
-  String? username = '';
-  String? email = '';
-  String? password = '';
 
   @override
   Widget build(BuildContext context) {
+//Declaramos e cubit
+    final registerCubit = context.watch<cubit.RegisterCubit>();
+
     return Form(
         key: _formKey,
         child: Column(
           children: [
             CustomTextFormField(
-              onChanged: (value) => username = value,
+              onChanged: (value) {
+                registerCubit.usernameChanged(value);
+                _formKey.currentState?.validate();
+              },
               label: 'Nombre de usuario',
               validator: (value) {
                 if (value == null || value.isEmpty) return 'Campo vacío';
@@ -59,7 +75,10 @@ class _CustomTextField extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             CustomTextFormField(
-              onChanged: (value) => email = value,
+              onChanged: (value) {
+                registerCubit.useremailChanged(value);
+                _formKey.currentState?.validate();
+              },
               label: "Correo Electronico",
               validator: (value) {
                 if (value == null || value.isEmpty) return 'Campo vacío';
@@ -74,7 +93,10 @@ class _CustomTextField extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             CustomTextFormField(
-              onChanged: (value) => password = value,
+              onChanged: (value) {
+                registerCubit.onpasswordChanged(value);
+                _formKey.currentState?.validate();
+              },
               label: "Contraseña",
               validator: (value) {
                 if (value == null || value.isEmpty) return 'Campo vacío';
@@ -89,6 +111,8 @@ class _CustomTextField extends StatelessWidget {
               onPressed: () {
                 final isValid = _formKey.currentState!.validate();
                 if (!isValid) return;
+
+                registerCubit.onSubmit();
               },
               icon: const Icon(Icons.save_as_sharp),
             ),
