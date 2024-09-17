@@ -11,6 +11,17 @@ class Username extends FormzInput<String, UsernameInputError> {
   // Call super.dirty to represent a modified form input.
   const Username.dirty(String value) : super.dirty(value);
 
+  String? get errorMessage {
+    if (isValid || isPure) return null;
+
+    if (displayError == UsernameInputError.empty)
+      return 'El campo es requerido';
+    if (displayError == UsernameInputError.lenght)
+      return 'El campo debe contener al menos 6 caracteres';
+
+    return null;
+  }
+
   // Override validator to handle validating a given input value.
   @override
   UsernameInputError? validator(String value) {
